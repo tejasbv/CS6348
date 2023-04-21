@@ -2,45 +2,10 @@
 import os
 import cv2
 import numpy as np
-from Crypto.Cipher import AES
 import secrets
 from PIL import Image
 
-
-# Define the encryption function
-
-
-def encrypt_file(key, in_filename, out_filename=None, chunksize=64*1024):
-    """Encrypts a file using AES (CBC mode) with the given key."""
-    if not out_filename:
-        out_filename = in_filename + '.enc'
-
-    # Generate a random IV (initialization vector)
-    iv = os.urandom(AES.block_size)
-
-    # Create the AES cipher object
-    cipher = AES.new(key, AES.MODE_CBC, iv)
-
-    # Open the input and output files
-    with open(in_filename, 'rb') as infile:
-        with open(out_filename, 'wb') as outfile:
-            # Write the IV to the output file
-            outfile.write(iv)
-
-            # Encrypt the file in chunks
-            while True:
-                chunk = infile.read(chunksize)
-                if len(chunk) == 0:
-                    break
-                elif len(chunk) % AES.block_size != 0:
-                    # Pad the last chunk if it's not a multiple of the block size
-                    chunk += b' ' * (AES.block_size - len(chunk) %
-                                     AES.block_size)
-
-                # Encrypt the chunk and write it to the output file
-                outfile.write(cipher.encrypt(chunk))
-
-# Define the function to convert a file to a binary string
+from AES.aes import myAES
 
 
 def file_to_binary(filename):
@@ -59,29 +24,21 @@ def file_to_binary(filename):
         return binary_string
 
 
-# Define the video dimensions
-width = 640
-height = 480
-
-# Generate a strong random key
-key = secrets.token_bytes(32)
-
-# Save the key to a file
-with open('key.txt', 'wb') as key_file:
-    key_file.write(key)
 
 # Define the input file
 in_filename = 'temp.txt'
 
 # Encrypt the file
-encrypt_file(key, in_filename)
+aes = myAES(in_filename, in_filename+".enc", "password")
+myAES.encrypt(aes)
 
 # Convert the encrypted file to a binary string
 encrypted_filename = in_filename + '.enc'
-encrypted_binary = file_to_binary(in_filename)
+encrypted_binary = file_to_binary(encrypted_filename)
 print(len(encrypted_binary))
-padding_length = width*height - (len(encrypted_binary) % (width*height))
+padding_length = 320*180 - (len(encrypted_binary) % (320*180))
 encrypted_binary += '0' * padding_length
+
 print(len(encrypted_binary))
 binary_string = encrypted_binary
 
@@ -91,11 +48,12 @@ while len(binary_string) % 4 != 0:
     binary_string = '0' + binary_string
 
 # Calculate the number of images needed
-num_images = (len(binary_string) // (320 * 180)) + 1
+num_images = (len(binary_string) // (320 * 180))
 
 
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-video_writer = cv2.VideoWriter('binary_video.mp4', fourcc, 25, (1280, 720), isColor=False)
+video_writer = cv2.VideoWriter(
+    f'{in_filename}_{padding_length}.mp4', fourcc, 25, (1280, 720), isColor=False)
 
 # Loop through the binary string and generate images
 for i in range(num_images):
@@ -109,10 +67,11 @@ for i in range(num_images):
     # Loop through the binary string and update the pixels of the image
     for j in range(i*320*180, (i+1)*320*180, 4):
         chunk = binary_string[j:j+4]
-        if(chunk != ''):
+        if (chunk != ''):
             for k in range(4):
                 pixel_value = 255 - int(chunk[k])*255  # 0 -> white, 1 -> black
-                image_data[current_row:current_row+4, current_col:current_col+4] = pixel_value
+                image_data[current_row:current_row+4,
+                           current_col:current_col+4] = pixel_value
                 current_col += 4
                 if current_col == 1280:  # Move to the next row if we have reached the end of the current row
                     current_row += 4
@@ -121,6 +80,7 @@ for i in range(num_images):
     final_image = Image.fromarray(image_data, mode='L')
     # final_image.save(f"binary_image_{i}.png")
     video_writer.write(np.array(image_data))
-    print(f"{i}/{num_images}")
+    print(f"generating frame {i}/{num_images}")
 
+print(f"created video {in_filename}_{padding_length}.mp4")
 video_writer.release()

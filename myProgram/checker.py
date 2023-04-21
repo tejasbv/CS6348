@@ -12,8 +12,9 @@ def compare_files(file1_path, file2_path):
                 return False
             if not char1:
                 return True
+        
 
-if compare_files('binarystring.txt', 'binary_string.txt'):
+if compare_files('out_file_name.txt', 'temp.txt'):
     print('The files match')
 else:
     print('The files do not match')
