@@ -3,9 +3,9 @@ import numpy as np
 from AES.aes import myAES
 
 # Open the video file
-fileName = 'temp.txt_17968.mp4'
-out_file_name = "out_"+fileName.split('_')[0]
-padding = int(fileName.split('_')[1].split('.')[0])
+fileName = 'downloadedVideo.mp4/test file upload from youtube.mp4'
+out_file_name = 'YT_temp.txt'#"out_"+fileName.split('_')[0]
+padding = 17968#int(fileName.split('_')[1].split('.')[0])
 video_reader = cv2.VideoCapture(fileName)
 
 # Set up counters to keep track of current row and column
@@ -36,9 +36,7 @@ while True:
     print(f"reading frame {f}")
     
 
-# # Trim any trailing zeros from the binary string
-# while binary_string[-1] == '0':
-#     binary_string = binary_string[:-1]
+
 
 # Save the binary string to a file
 with open('binary_string.txt', 'w') as f:
@@ -46,14 +44,7 @@ with open('binary_string.txt', 'w') as f:
 
 # Print a message indicating the file was saved
 print("Binary string extracted from video, converting binary to ascii")
-# text = ''
-# for i in range(0, len(binary_string), 8):
-#     chunk = binary_string[i:i+8]  # take 8 characters at a time
-#     decimal = int(chunk, 2)  # convert binary to decimal
-#     text += chr(decimal)
 
-# with open(out_file_name+".enc", 'wb') as f:
-#     f.write(text.encode("utf-8"))
 
 with open(out_file_name+".enc", 'wb') as new_file:
     # Write the binary string to the new file
