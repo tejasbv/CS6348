@@ -7,6 +7,7 @@ from PIL import Image
 
 from AES.aes import myAES
 from YTHandler import YThandler
+from publicprivate import PublicPrivate
 # from Google.YTHandler import YThandler
 
 
@@ -30,7 +31,9 @@ class Handler:
             file.close()
             return binary_string
 
-    def save(self, path, password, title, desc):
+    def save(self, path, password, pathToPublikKey, title, desc):
+        passwordEncryptor = PublicPrivate()
+        passwordEncryptor.encrypt(pathToPublikKey, password)
         in_filename = path
         display = ""
         # Encrypt the file
@@ -176,6 +179,3 @@ class Handler:
         aes.decrypt()
         return out_file_name
 
-if __name__ == "__main__":
-    handler = Handler("")
-    handler.retreive("data/temp.txt_38768.mp4", "1234")

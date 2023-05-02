@@ -12,6 +12,7 @@ def save_file_window():
     layout = [[sg.Text("Save a new file")],
               [sg.Text("Select file to upload"), sg.Input(key="-FILE-"), sg.FileBrowse(file_types=(("All Files", "*.*"),))],
               [sg.Text("Enter password"), sg.Input(key="-PASSWORD-", password_char="*")],
+              [sg.Text("Select public Key file"), sg.Input(key="-PUBLICKEYFILE-"), sg.FileBrowse(file_types=(("All Files", "*.*"),))],
               [sg.Text("Enter Video Title"), sg.Input(key="-TiTLE-")],
               [sg.Text("Enter Video Description"), sg.Input(key="-DESCRIPTION-")],
               [sg.Button("Submit"), sg.Button("Cancel")]]
@@ -25,6 +26,7 @@ def save_file_window():
             return "no file was chosen", "null"
         elif event == "Submit":
             file_path = values["-FILE-"]
+            public_key_file_path = values["-PUBLICKEYFILE-"]
             password = values["-PASSWORD-"]
             title = values["-TiTLE-"]
             description = values["-DESCRIPTION-"]
@@ -33,7 +35,7 @@ def save_file_window():
             main_window["-TERMINAL-"].update(f"File path: {file_path}\ncreating video please wait...")
             window.close()
             handler = Handler(MainWindow=main_window)
-            ret = handler.save(file_path, password, title, description)
+            ret = handler.save(file_path, password,public_key_file_path ,title, description)
             main_window["-TERMINAL-"].update(f"File path: {file_path}\ncreating video please wait...\n{ret}")
             return file_path, password
 
