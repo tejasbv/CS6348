@@ -2,12 +2,12 @@
 import os
 import cv2
 import numpy as np
-import secrets
 from PIL import Image
 # from myProgram.AES.aes import myAES
 
 from AES.aes import myAES
-from Google.YTHandler import YThandler
+from YTHandler import YThandler
+# from Google.YTHandler import YThandler
 
 
 class Handler:
@@ -43,6 +43,20 @@ class Handler:
         print(len(encrypted_binary))
         padding_length = 320*180 - (len(encrypted_binary) % (320*180))
         encrypted_binary += '0' * padding_length
+
+        #metadata
+        metadata = f"{in_filename.split('/')[-1]}?{padding_length}?"
+        bin_str = ""
+        for char in metadata:
+            byte = char
+            if not byte:
+                break
+            # Convert the byte to binary and append it to the binary string
+            bin_str += bin(ord(byte))[2:].zfill(8)
+        padding_length2 = 320*180 - (len(bin_str) % (320*180))
+        bin_str += '0' * padding_length2
+        encrypted_binary = bin_str+encrypted_binary
+        # Create the metadata file
 
         print(len(encrypted_binary))
         binary_string = encrypted_binary
@@ -91,12 +105,12 @@ class Handler:
         video_writer.release()
         self.ytHandler.upload(f"{in_filename}_{padding_length}.mp4",title,desc)
         return f"created video {in_filename}_{padding_length}.mp4"
-
+    
     def retreive(self, link, password):
-        path = self.ytHandler.download(link)
+        path = link
         fileName = path
-        out_file_name = 'YT_temp.txt'  # "out_"+fileName.split('_')[0]
-        padding = 17968  # int(fileName.split('_')[1].split('.')[0])
+        # out_file_name =  "out_"+fileName.split('_')[0]
+        # padding = 17968  # int(fileName.split('_')[1].split('.')[0])
         video_reader = cv2.VideoCapture(fileName)
 
         # Set up counters to keep track of current row and column
@@ -108,10 +122,23 @@ class Handler:
 
         # Loop through the frames of the video
         f = 0
+
+        out_file_name = ''
+        padding  = 0
+        metadata = ''
         while True:
             # Read a frame from the video
             ret, frame = video_reader.read()
             if not ret:  # If there are no more frames, break out of the loop
+                md = ""
+                for i in range(0, len(metadata), 8):
+                    byte = int(metadata[i:i+8], 2)
+                    md += chr(byte)
+                arr = md.split('?')
+                out_file_name = arr[0]
+                padding = int(arr[1])
+                    
+                    
                 binary_string = binary_string[:-padding]
                 break
 
@@ -123,7 +150,11 @@ class Handler:
                 for j in range(0, 1280, 4):
                     # Calculate the mean pixel value and normalize to 0-1
                     pixel_value = frame_gray[i:i+4, j:j+4].mean() / 255
-                    binary_string += '0' if pixel_value > 0.5 else '1'
+                    if f==0:
+                       metadata += '0' if pixel_value > 0.5 else '1'
+                    else:
+                        binary_string += '0' if pixel_value > 0.5 else '1'
+            
             f += 1
             print(f"reading frame {f}")
 
@@ -141,5 +172,10 @@ class Handler:
                 new_file.write(bytes([byte]))
 
         print(f"output file name is {out_file_name}")
-        aes = myAES("temp.txt"+".enc", "out_file_name.txt", password)
+        aes = myAES(out_file_name+".enc", out_file_name, password)
         aes.decrypt()
+        return out_file_name
+
+if __name__ == "__main__":
+    handler = Handler("")
+    handler.retreive("data/temp.txt_38768.mp4", "1234")

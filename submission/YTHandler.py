@@ -16,7 +16,7 @@ class YThandler:
         return mp4_720p_files.download()
 
     def upload(self, video_file, title, desc):
-        CLIENT_SECRETS_FILE = "myProgram/Credentials/client_secret_328977920138-f584r71j9fse29l4rb09ufrllkghnftb.apps.googleusercontent.com.json"
+        CLIENT_SECRETS_FILE = "Credentials/client_secret_328977920138-f584r71j9fse29l4rb09ufrllkghnftb.apps.googleusercontent.com.json"
         API_NAME = "youtube"
         API_VERSION = "v3"
         SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
