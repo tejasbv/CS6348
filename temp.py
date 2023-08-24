@@ -7,7 +7,7 @@
 # content - is a string with the file content.
 def writeToFile(path, content):
   file = open(path, "w")
-  for i in range(5000):
+  for i in range(500000):
     file.write(f"{i} ")
   file.close()
   
